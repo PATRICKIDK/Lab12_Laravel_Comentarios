@@ -1,32 +1,36 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
-        <h1>Publicaciones</h1>
-        <a href="{{ route('posts.create') }}" class="btn btn-primary mb-3">Crear Publicación</a>
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">📚 Publicaciones</h1>
 
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+    @if(session('success'))
+        <div class="alert alert-success text-center">{{ session('success') }}</div>
+    @endif
 
-        @foreach ($posts as $post)
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">{{ $post->title }}</h5>
-                    <p class="card-text">{{ Str::limit($post->content, 100) }}</p>
-                    <p class="card-text"><small>Por: {{ $post->user->name }}</small></p>
-                    <a href="{{ route('posts.show', $post) }}" class="btn btn-info">Ver</a>
-                    @if ($post->user_id === Auth::id())
-                        <a href="{{ route('posts.edit', $post) }}" class="btn btn-warning">Editar</a>
-                        <form action="{{ route('posts.destroy', $post) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger" onclick="return confirm('¿Seguro?')">Eliminar</button>
-                        </form>
-                    @endif
-                </div>
-            </div>
-        @endforeach
+    <div class="text-end mb-3">
+        <a href="{{ route('posts.create') }}" class="btn btn-primary">➕ Nueva publicación</a>
     </div>
-@endsection
 
+    @foreach($posts as $post)
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title">{{ $post->title }}</h4>
+                <p class="card-text text-muted">{{ Str::limit($post->content, 100) }}</p>
+                <p><small>✍️ Autor: {{ $post->user->name }}</small></p>
+
+                <a href="{{ route('posts.show', $post) }}" class="btn btn-info btn-sm">Ver</a>
+
+                @if($post->user_id === Auth::id())
+                    <a href="{{ route('posts.edit', $post) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <form action="{{ route('posts.destroy', $post) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar publicación?')">Eliminar</button>
+                    </form>
+                @endif
+            </div>
+        </div>
+    @endforeach
+</div>
+@endsection
