@@ -3,6 +3,8 @@
 @section('content')
 <div class="container">
 
+    <h2 class="fw-bold mb-4">Editar Nota</h2>
+
     {{-- Mensaje de éxito --}}
     @if(session('success'))
         <div class="alert alert-success text-center">
@@ -10,65 +12,46 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Notes and Reminders</h2>
-        <a href="{{ route('notas.create') }}" class="btn btn-primary">
-            + Crear Nota
-        </a>
-    </div>
+    <form method="POST" action="{{ route('notas.update', $nota->id) }}">
+        @csrf
+        @method('PUT')
 
-    {{-- Si NO hay notas --}}
-    @if($notas->isEmpty())
-        <div class="alert alert-info text-center">
-            No hay notas registradas aún.
-        </div>
-    @else
+        {{-- TÍTULO --}}
+        <label class="form-label">Título</label>
+        <input type="text"
+               name="titulo"
+               class="form-control mb-3"
+               value="{{ old('titulo', $nota->titulo) }}"
+               required>
 
-        @foreach ($notas as $nota)
-            <div class="card mb-3 shadow-sm">
+        {{-- CONTENIDO --}}
+        <label class="form-label">Contenido</label>
+        <textarea name="contenido"
+                  class="form-control mb-4"
+                  rows="3"
+                  required>{{ old('contenido', $nota->contenido) }}</textarea>
 
-                <div class="card-body">
-                    <h4 class="card-title fw-bold">{{ $nota->titulo }}</h4>
+        {{-- FECHA DE VENCIMIENTO --}}
+        @php
+            // Convertir la fecha a formato compatible con datetime-local
+            $fecha = $nota->recordatorio && $nota->recordatorio->fecha_vencimiento
+                ? \Carbon\Carbon::parse($nota->recordatorio->fecha_vencimiento)->format('Y-m-d\TH:i')
+                : '';
+        @endphp
 
-                    <p class="text-muted">
-                        {{ $nota->contenido }}
-                    </p>
+        <label class="form-label">Fecha de Vencimiento</label>
+        <input type="datetime-local"
+               name="fecha_vencimiento"
+               class="form-control mb-4"
+               value="{{ old('fecha_vencimiento', $fecha) }}"
+               required>
 
-                    {{-- Estado --}}
-                    @if($nota->estado == 'pending')
-                        <span class="badge bg-warning text-dark">Pending</span>
-                    @else
-                        <span class="badge bg-success">Completed</span>
-                    @endif
+        {{-- BOTÓN --}}
+        <button type="submit" class="btn btn-primary w-100 mt-3">
+            Actualizar Nota
+        </button>
 
-                    <br><br>
-
-                    {{-- Fecha --}}
-                    <p class="mb-1">
-                        <i class="bi bi-calendar-event"></i>
-                        <strong>Vence:</strong> {{ $nota->fecha_vencimiento }}
-                    </p>
-
-                    {{-- Acciones --}}
-                    <div class="mt-3 d-flex gap-2">
-
-                        <a href="{{ route('notas.edit', $nota->id) }}" class="btn btn-sm btn-info text-white">
-                            ✏ Editar
-                        </a>
-
-                        <form action="{{ route('notas.destroy', $nota->id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta nota?');">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn btn-sm btn-danger">🗑 Eliminar</button>
-                        </form>
-
-                    </div>
-
-                </div>
-            </div>
-        @endforeach
-
-    @endif
+    </form>
 
 </div>
 @endsection
