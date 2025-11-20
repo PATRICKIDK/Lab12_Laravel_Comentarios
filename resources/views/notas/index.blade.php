@@ -65,20 +65,57 @@
                 Usuario: {{ $user->name }}
                 <span class="badge bg-info float-end">{{ $user->total_notas }} Active Notes</span>
             </div>
+
             <div class="card-body">
                 @if($user->notas->count() > 0)
+
                     @foreach($user->notas as $nota)
-                        <div class="mb-3 border rounded p-3">
+                        <div class="mb-3 border rounded p-3 bg-white">
+
                             <h5 class="fw-semibold">{{ $nota->titulo_formateado }}</h5>
+
                             <p>{{ $nota->contenido }}</p>
+
+                            {{-- Estado --}}
                             <span class="badge {{ $nota->recordatorio->completado ? 'bg-success' : 'bg-warning text-dark' }}">
                                 {{ $nota->recordatorio->completado ? 'Completed' : 'Pending' }}
                             </span>
+
                             <small class="d-block text-muted mt-1">
                                 📅 Due: {{ \Carbon\Carbon::parse($nota->recordatorio->fecha_vencimiento)->format('Y-m-d H:i') }}
                             </small>
+
+                            {{-- 🔵 BOTÓN VER ACTIVIDADES --}}
+                            <a href="{{ route('notas.actividades.index', $nota->id) }}" 
+                               class="btn btn-outline-primary btn-sm mt-3">
+                               📋 Ver Actividades
+                            </a>
+
+                            {{-- Botones Editar / Eliminar --}}
+                            <div class="mt-3 d-flex gap-2">
+
+                                {{-- Editar --}}
+                                <a href="{{ route('notas.edit', $nota->id) }}"
+                                   class="btn btn-warning btn-sm">
+                                    ✏️ Editar
+                                </a>
+
+                                {{-- Eliminar --}}
+                                <form method="POST"
+                                      action="{{ route('notas.destroy', $nota->id) }}"
+                                      onsubmit="return confirm('¿Estás seguro que deseas eliminar esta nota?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        🗑️ Eliminar
+                                    </button>
+                                </form>
+
+                            </div>
+
                         </div>
                     @endforeach
+
                 @else
                     <p class="text-muted">No hay notas activas para este usuario.</p>
                 @endif

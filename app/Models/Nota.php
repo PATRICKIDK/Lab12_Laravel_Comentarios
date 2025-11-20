@@ -11,7 +11,7 @@ class Nota extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'notas'; // ✅ explícito por si la tabla no sigue convención en migración
+    protected $table = 'notas';
 
     protected $fillable = [
         'user_id',
@@ -21,13 +21,14 @@ class Nota extends Model
 
     /**
      * 🔎 Alcance global: solo notas con recordatorio activo y no completado
+     * ⚠ Importante: no aplica cuando hacemos búsquedas específicas (edit, update, delete)
      */
     protected static function booted()
     {
         static::addGlobalScope('activa', function (Builder $builder) {
-            $builder->whereHas('recordatorio', function ($query) {
-                $query->where('fecha_vencimiento', '>=', now())
-                      ->where('completado', false);
+            $builder->whereHas('recordatorio', function ($q) {
+                $q->where('fecha_vencimiento', '>=', now())
+                  ->where('completado', false);
             });
         });
     }
@@ -57,5 +58,21 @@ class Nota extends Model
     public function recordatorio()
     {
         return $this->hasOne(Recordatorio::class);
+    }
+
+    /**
+     * 📝 Relación: una nota tiene muchas actividades (1 → ∞)
+     */
+    public function actividades()
+    {
+        return $this->hasMany(Actividad::class, 'nota_id');
+    }
+
+    /**
+     * 🔢 Cantidad de actividades pendientes (opcional para mostrar en UI)
+     */
+    public function getPendientesCountAttribute()
+    {
+        return $this->actividades()->where('estado', 'pendiente')->count();
     }
 }
